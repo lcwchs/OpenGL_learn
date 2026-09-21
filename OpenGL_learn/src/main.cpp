@@ -4,8 +4,25 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <functional>
 
+#define ASSERT(x) if(!(x)) __debugbreak();
+#define GLCall(x) GLClearError();\
+	x;\
+	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
+static void GLClearError() 
+{
+	while (glGetError() != GL_NO_ERROR);
+}
+static bool GLLogCall(const char* function, std::string filePath, int line) 
+{
+	while (unsigned int error = glGetError()) {
+		std::cout << "[OpenGL Error](" << error << ") " << function << " " << filePath << ":" << line << std::endl;
+		return false;
+	}
+	return true;
+}
 
 enum ShaderType{
 	INVALID = -1,
@@ -69,7 +86,7 @@ static unsigned int CompileShader(unsigned int type, const std::string& source)
 
 static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader) 
 {
-	unsigned int program = glCreateProgram();
+	int program = glCreateProgram();
 	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
 	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
@@ -146,7 +163,7 @@ int main(void)
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
