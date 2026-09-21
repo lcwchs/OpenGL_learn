@@ -86,7 +86,7 @@ static unsigned int CompileShader(unsigned int type, const std::string& source)
 
 static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader) 
 {
-	int program = glCreateProgram();
+	unsigned int program = glCreateProgram();
 	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
 	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
@@ -119,6 +119,9 @@ int main(void)
 	   
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
+
+	//set Interval
+	//GLCall(glfwSwapInterval(1));
 
 	if (glewInit() != GLEW_OK)
 		std::cout << "Error!" << std::endl;
@@ -157,13 +160,27 @@ int main(void)
 	unsigned int shader = CreateShader(shader_source.vertexShader, shader_source.fragmentShader);
 	glUseProgram(shader);
 
+	GLCall(int location = glGetUniformLocation(shader, "u_Color"));
+	ASSERT(location != -1);
+	glUniform4f(location, 0.5f, 0.5f, 0.5f, 1.0f);
+
+	float color_r = 0.0f;
+	float color_increment = 0.05f;
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		glUniform4f(location, color_r, 0.5f, 0.5f, 1.0f);
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+		if (color_r > 1.0f)
+			color_increment = -0.05f;
+		else if (color_r < 0.0f)
+			color_increment = +0.05f;
+
+		color_r += color_increment;
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
