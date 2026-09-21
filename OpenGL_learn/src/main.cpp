@@ -5,13 +5,15 @@
 #include <fstream>
 #include <sstream>
 
-static enum ShaderType{
+
+
+enum ShaderType{
 	INVALID = -1,
 	VERTEX_SHADER = 0,
 	FRAGMENT_SHADER = 1
 };
 
-static struct ShaderSource{
+struct ShaderSource{
 	std::string vertexShader;
 	std::string fragmentShader;
 };
@@ -106,15 +108,25 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-	float position[6]{
+	float position[]{
 		-0.5f, -0.5f,
-		0.0f, 0.5f,
-		0.5f, -0.5f,
+		 0.5f, -0.5f,
+		 0.5f,  0.5f,
+		-0.5f,  0.5f
 	};
 	unsigned int buffer;
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, position, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, position, GL_STATIC_DRAW);
+
+	unsigned int indices[]{
+		0, 1, 2,
+		2, 3, 0
+	};
+	unsigned int ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * 6, indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
@@ -134,16 +146,13 @@ int main(void)
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
 
 		/* Poll for and process events */
 		glfwPollEvents();
-		static int i = 0;
-		position[3] = 0.5f + (i++) * 0.001f;
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, position, GL_STATIC_DRAW);
 	}
 
 	glDeleteProgram(shader);
