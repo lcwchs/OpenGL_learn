@@ -9,6 +9,7 @@
 #include "Render.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 enum ShaderType{
 	INVALID = -1,
@@ -121,9 +122,6 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-	unsigned int vao;
-	GLCall(glGenVertexArrays(1, &vao));
-	GLCall(glBindVertexArray(vao));
 	{
 		float position[]{
 			-0.5f, -0.5f,
@@ -131,16 +129,22 @@ int main(void)
 			 0.5f,  0.5f,
 			-0.5f,  0.5f
 		};
-		VertexBuffer vertex_buffer(position, 2 * 4 * sizeof(float));
 
 		unsigned int indices[]{
 			0, 1, 2,
 			2, 3, 0
 		};
+
+		VertexArray vertex_array;
+		VertexBuffer vertex_buffer(position, 2 * 4 * sizeof(float));
+		VertexBufferLayout layout;
+		layout.Push<float>(2);
+		vertex_array.AddBuffer(vertex_buffer,layout);
+
 		IndexBuffer index_buffer(indices, 6);
 
-		GLCall(glEnableVertexAttribArray(0));
-		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+		//GLCall(glEnableVertexAttribArray(0));
+		//GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
 
 		ShaderSource shader_source = ParseShader("./res/shaders/Basic.shader");
 		std::cout << "vertex shader" << std::endl;
@@ -155,10 +159,10 @@ int main(void)
 		ASSERT(location != -1);
 		glUniform4f(location, 0.5f, 0.5f, 0.5f, 1.0f);
 
-		glUseProgram(0);
+		/*glUseProgram(0);
 		GLCall(glBindVertexArray(0));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));*/
 
 		float color_r = 0.0f;
 		float color_increment = 0.05f;
@@ -170,9 +174,9 @@ int main(void)
 
 			glUseProgram(shader);
 			glUniform4f(location, color_r, 0.5f, 0.5f, 1.0f);
-			GLCall(glBindVertexArray(vao));
+			vertex_array.Bind();
 			index_buffer.Bind();
-
+			
 			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
 			if (color_r > 1.0f)
