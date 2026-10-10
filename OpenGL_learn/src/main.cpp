@@ -11,6 +11,7 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
+#include "Texture.h"
 
 #include "Shader.h"
 
@@ -50,10 +51,10 @@ int main(void)
 
 	{
 		float position[]{
-			-0.5f, -0.5f,
-			 0.5f, -0.5f,
-			 0.5f,  0.5f,
-			-0.5f,  0.5f
+			-0.5f, -0.5f, 0.0f, 0.0f,
+			 0.5f, -0.5f, 1.0f, 0.0f,
+			 0.5f,  0.5f, 1.0f, 1.0f,
+			-0.5f,  0.5f, 0.0f, 1.0f
 		};
 
 		unsigned int indices[]{
@@ -61,9 +62,13 @@ int main(void)
 			2, 3, 0
 		};
 
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
 		VertexArray vertex_array;
-		VertexBuffer vertex_buffer(position, 2 * 4 * sizeof(float));
+		VertexBuffer vertex_buffer(position, 4 * 4 * sizeof(float));
 		VertexBufferLayout layout;
+		layout.Push<float>(2);
 		layout.Push<float>(2);
 		vertex_array.AddBuffer(vertex_buffer,layout);
 
@@ -76,6 +81,11 @@ int main(void)
 		shader.Bind();
 		std::string Unifrom_name = "u_Color";
 		shader.setUniform4f(Unifrom_name, 0.5f, 0.5f, 0.5f, 1.0f);
+
+		Texture texture("./res/textures/ItTakesTwo.png");
+		texture.Bind(0);
+		Unifrom_name = "u_Texture";
+		shader.setUniform1i(Unifrom_name, 0);
 		/*glUseProgram(0);
 		GLCall(glBindVertexArray(0));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
