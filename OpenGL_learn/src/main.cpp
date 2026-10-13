@@ -12,8 +12,9 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Texture.h"
-
 #include "Shader.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 int main(void)
 {
@@ -74,8 +75,8 @@ int main(void)
 
 		IndexBuffer index_buffer(indices, 6);
 
-		//GLCall(glEnableVertexAttribArray(0));
-		//GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+		glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -0.75f, 0.75f, -1.0f, 1.0f);
+		proj = glm::ortho(-1.0f, 1.0f, -0.75f, 0.75f, -1.0f, 1.0f);
 
 		Shader shader("./res/shaders/Basic.shader");
 		shader.Bind();
@@ -86,6 +87,8 @@ int main(void)
 		texture.Bind(0);
 		Unifrom_name = "u_Texture";
 		shader.setUniform1i(Unifrom_name, 0);
+		Unifrom_name = "u_MVP";
+		shader.setUniformMat4f(Unifrom_name, proj);
 		/*glUseProgram(0);
 		GLCall(glBindVertexArray(0));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -94,6 +97,7 @@ int main(void)
 		float color_r = 0.0f;
 		float color_increment = 0.05f;
 		Renderer renderer;
+		//float mat_1 = 1.0f;
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
@@ -102,6 +106,9 @@ int main(void)
 
 			shader.Bind();
 			shader.setUniform4f(Unifrom_name, color_r, 0.5f, 0.5f, 1.0f);
+			/*proj = glm::ortho(-1.0f, mat_1, -0.75f, 0.75f, -1.0f, 1.0f);
+			mat_1 = mat_1 - 0.001f;
+			shader.setUniformMat4f(Unifrom_name, proj);*/
 
 			renderer.Draw(vertex_array, index_buffer, shader);
 
