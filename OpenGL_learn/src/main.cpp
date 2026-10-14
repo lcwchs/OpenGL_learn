@@ -52,10 +52,10 @@ int main(void)
 
 	{
 		float position[]{
-			-0.5f, -0.5f, 0.0f, 0.0f,
-			 0.5f, -0.5f, 1.0f, 0.0f,
-			 0.5f,  0.5f, 1.0f, 1.0f,
-			-0.5f,  0.5f, 0.0f, 1.0f
+			100.0f, 100.0f, 0.0f, 0.0f,
+			200.0f, 100.0f, 1.0f, 0.0f,
+			200.0f, 200.0f, 1.0f, 1.0f,
+			100.0f, 200.0f, 0.0f, 1.0f
 		};
 
 		unsigned int indices[]{
@@ -75,8 +75,11 @@ int main(void)
 
 		IndexBuffer index_buffer(indices, 6);
 
-		glm::mat4 proj = glm::ortho(-1.0f, 1.0f, -0.75f, 0.75f, -1.0f, 1.0f);
-		proj = glm::ortho(-1.0f, 1.0f, -0.75f, 0.75f, -1.0f, 1.0f);
+		glm::mat4 proj = glm::ortho(0.0f, 648.0f, 0.0f, 480.0f, -1.0f, 1.0f);
+		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
+
+		glm::mat4 mvp = proj * view * model;
 
 		Shader shader("./res/shaders/Basic.shader");
 		shader.Bind();
@@ -88,7 +91,7 @@ int main(void)
 		Unifrom_name = "u_Texture";
 		shader.setUniform1i(Unifrom_name, 0);
 		Unifrom_name = "u_MVP";
-		shader.setUniformMat4f(Unifrom_name, proj);
+		shader.setUniformMat4f(Unifrom_name, mvp);
 		/*glUseProgram(0);
 		GLCall(glBindVertexArray(0));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
