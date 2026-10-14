@@ -13,8 +13,12 @@
 #include "VertexBufferLayout.h"
 #include "Texture.h"
 #include "Shader.h"
+
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 int main(void)
 {
@@ -29,7 +33,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(1920, 1080, "Hello World", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -75,11 +79,8 @@ int main(void)
 
 		IndexBuffer index_buffer(indices, 6);
 
-		glm::mat4 proj = glm::ortho(0.0f, 648.0f, 0.0f, 480.0f, -1.0f, 1.0f);
+		glm::mat4 proj = glm::ortho(0.0f,1920.0f, 0.0f, 1080.0f, -1.0f, 1.0f);
 		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
-
-		glm::mat4 mvp = proj * view * model;
 
 		Shader shader("./res/shaders/Basic.shader");
 		shader.Bind();
@@ -90,8 +91,7 @@ int main(void)
 		texture.Bind(0);
 		Unifrom_name = "u_Texture";
 		shader.setUniform1i(Unifrom_name, 0);
-		Unifrom_name = "u_MVP";
-		shader.setUniformMat4f(Unifrom_name, mvp);
+
 		/*glUseProgram(0);
 		GLCall(glBindVertexArray(0));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -100,6 +100,13 @@ int main(void)
 		float color_r = 0.0f;
 		float color_increment = 0.05f;
 		Renderer renderer;
+
+		ImGui::CreateContext();
+		ImGui_ImplGlfwGL3_Init(window, true);
+		ImGui::StyleColorsDark();
+
+		glm::vec3 translate = glm::vec3(200, 200, 0);
+
 		//float mat_1 = 1.0f;
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
@@ -107,8 +114,15 @@ int main(void)
 			/* Render here */
 			renderer.Clear();
 
+			ImGui_ImplGlfwGL3_NewFrame();
+
+			glm::mat4 model = glm::translate(glm::mat4(1.0f), translate);
+			glm::mat4 mvp = proj * view * model;
+
 			shader.Bind();
 			shader.setUniform4f(Unifrom_name, color_r, 0.5f, 0.5f, 1.0f);
+			Unifrom_name = "u_MVP";
+			shader.setUniformMat4f(Unifrom_name, mvp);
 			/*proj = glm::ortho(-1.0f, mat_1, -0.75f, 0.75f, -1.0f, 1.0f);
 			mat_1 = mat_1 - 0.001f;
 			shader.setUniformMat4f(Unifrom_name, proj);*/
@@ -122,6 +136,17 @@ int main(void)
 
 			color_r += color_increment;
 
+			{
+				static float f = 0.0f;
+				static int counter = 0;
+				ImGui::SliderFloat3("Translation", &translate.x, 0.0f, 1920.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+				ImGui::Text("counter = %d", counter);
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			}
+
+			ImGui::Render();
+			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
 			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
 
@@ -129,6 +154,8 @@ int main(void)
 			glfwPollEvents();
 		}
 	}
+	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui::DestroyContext();
 	glfwTerminate();
 	return 0;
 }
