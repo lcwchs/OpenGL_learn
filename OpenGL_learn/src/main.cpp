@@ -56,10 +56,10 @@ int main(void)
 
 	{
 		float position[]{
-			100.0f, 100.0f, 0.0f, 0.0f,
-			200.0f, 100.0f, 1.0f, 0.0f,
-			200.0f, 200.0f, 1.0f, 1.0f,
-			100.0f, 200.0f, 0.0f, 1.0f
+			-50.0f, -50.0f, 0.0f, 0.0f,
+			 50.0f, -50.0f, 1.0f, 0.0f,
+			 50.0f,  50.0f, 1.0f, 1.0f,
+			-50.0f,  50.0f, 0.0f, 1.0f
 		};
 
 		unsigned int indices[]{
@@ -80,7 +80,7 @@ int main(void)
 		IndexBuffer index_buffer(indices, 6);
 
 		glm::mat4 proj = glm::ortho(0.0f,1920.0f, 0.0f, 1080.0f, -1.0f, 1.0f);
-		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+		glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
 		Shader shader("./res/shaders/Basic.shader");
 		shader.Bind();
@@ -105,7 +105,8 @@ int main(void)
 		ImGui_ImplGlfwGL3_Init(window, true);
 		ImGui::StyleColorsDark();
 
-		glm::vec3 translate = glm::vec3(200, 200, 0);
+		glm::vec3 translateA = glm::vec3(200, 200, 0);
+		glm::vec3 translateB = glm::vec3(400, 400, 0);
 
 		//float mat_1 = 1.0f;
 		/* Loop until the user closes the window */
@@ -116,18 +117,23 @@ int main(void)
 
 			ImGui_ImplGlfwGL3_NewFrame();
 
-			glm::mat4 model = glm::translate(glm::mat4(1.0f), translate);
-			glm::mat4 mvp = proj * view * model;
+			{
+				glm::mat4 model = glm::translate(glm::mat4(1.0f), translateA);
+				glm::mat4 mvp = proj * view * model;
+				shader.Bind();
+				Unifrom_name = "u_MVP";
+				shader.setUniformMat4f(Unifrom_name, mvp);
+				renderer.Draw(vertex_array, index_buffer, shader);
+			}
 
-			shader.Bind();
-			shader.setUniform4f(Unifrom_name, color_r, 0.5f, 0.5f, 1.0f);
-			Unifrom_name = "u_MVP";
-			shader.setUniformMat4f(Unifrom_name, mvp);
-			/*proj = glm::ortho(-1.0f, mat_1, -0.75f, 0.75f, -1.0f, 1.0f);
-			mat_1 = mat_1 - 0.001f;
-			shader.setUniformMat4f(Unifrom_name, proj);*/
-
-			renderer.Draw(vertex_array, index_buffer, shader);
+			{
+				glm::mat4 model = glm::translate(glm::mat4(1.0f), translateB);
+				glm::mat4 mvp = proj * view * model;
+				shader.Bind();
+				Unifrom_name = "u_MVP";
+				shader.setUniformMat4f(Unifrom_name, mvp);
+				renderer.Draw(vertex_array, index_buffer, shader);
+			}
 
 			if (color_r > 1.0f)
 				color_increment = -0.05f;
@@ -139,7 +145,8 @@ int main(void)
 			{
 				static float f = 0.0f;
 				static int counter = 0;
-				ImGui::SliderFloat3("Translation", &translate.x, 0.0f, 1920.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+				ImGui::SliderFloat3("Translation A", &translateA.x, 0.0f, 1920.0f);
+				ImGui::SliderFloat3("Translation B", &translateB.x, 0.0f, 1920.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
 				ImGui::Text("counter = %d", counter);
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			}
